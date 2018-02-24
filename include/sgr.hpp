@@ -2,6 +2,7 @@
 #define CPP_SGR_HPP
 
 #include <iostream>
+#include <string>
 
 namespace cpp_sgr
 {
