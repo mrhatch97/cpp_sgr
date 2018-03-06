@@ -73,32 +73,32 @@ void exoticTest()
   std::cout << (bold, underline) << "Testing unusual codes:\n";
 
   std::cout << (faint) << "Faint";
-  std::cout << "\n";
+  std::cout << " ";
   std::cout << (italic) << "Italic";
-  std::cout << "\n";
+  std::cout << " ";
   std::cout << (blink_slow) << "Blinking slowly";
-  std::cout << "\n";
+  std::cout << " ";
   std::cout << (blink_fast) << "Blinking quickly";
   std::cout << "\n";
   std::cout << (conceal) << "Concealed";
   std::cout << " (concealed)";
-  std::cout << "\n";
+  std::cout << " ";
   std::cout << (strike) << "Crossed out";
-  std::cout << "\n";
+  std::cout << " ";
   std::cout << (frame) << "Framed";
-  std::cout << "\n";
+  std::cout << " ";
   std::cout << (encircle) << "Encircled";
   std::cout << "\n";
   std::cout << (overline) << "Overlined";
   std::cout << "\n";
 }
 
-int main(int argc, char * * argv)
+int main()
 {
-    codeTest();
-    ansiTest();
-    iteratorTest();
-    exoticTest();
+  codeTest();
+  ansiTest();
+  iteratorTest();
+  exoticTest();
 
-    return 0;
+  return 0;
 }

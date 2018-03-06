@@ -24,6 +24,10 @@ To apply multiple SGRs, combine them with the comma or + operator like so:
 std::cerr << (cpp_sgr::bold, cpp_sgr::underline) << "This text is bold and underlined\n";
 std::cerr << cpp_sgr::italic + cpp_sgr::reverse << "This text is italic and reversed\n";
 ```
+or simply insert multiple SGRs:
+```cpp
+std::cerr << cpp_sgr::bold << cpp_sgr::italic << "This text is bold and italic\n";
+```
 
 ## Color
 SGRs can color either the foreground (text) or background of terminal output.
@@ -101,17 +105,6 @@ std::cerr << cpp_sgr::red_fg << "This text is red\n" << cpp_sgr::reset <<
 Of the non-color SGRs, `bold`, `underline`, and `reverse` are the most widely
 supported by terminal emulators. YMMV when using other SGRs, as they may have
 no effect or even completely unexpected effects.
-
-### Multiple SGR Insertion
-Insertion of a new SGR into a stream with an active SGR will override the active
-SGR, not combine with it. These lines are **not** equivalent:
-```cpp
-std::cerr << (cpp_sgr::red_fg, cpp_sgr::blue_bg) << "Some text";
-std::cerr << cpp_sgr::red_fg << cpp_sgr::blue_bg << "Some text";
-```
-
-The first line produces red text with a blue background; the second produces
-default-colored text with a blue background.
 
 ### Unexpected Background Color Behavior
 If strange behavior is experienced when using background colors,

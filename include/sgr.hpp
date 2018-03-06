@@ -131,7 +131,8 @@ namespace cpp_sgr
      * Construct an SGR with the given std::string.
      *
      * This constructor does not verify that the string is a valid escape
-     * sequence.
+     * sequence. Marked explicit to prevent automatic conversion of strings
+     * to SGRs when not desired.
      *
      * @param str SGR string representation
      */
@@ -248,7 +249,7 @@ namespace cpp_sgr
      * @return      sgr to set the background to the given color
      */
 
-    static color bg(const ANSIColor code)
+    static const color bg(const ANSIColor code)
     {
       return color(code, false);
     }
@@ -398,8 +399,10 @@ namespace cpp_sgr
     std::ostream(std::move(stream))
     {
       this->rdbuf(stream.rdbuf());
-      this->dead = stream.dead;
+      this->shouldReset = stream.shouldReset;
     }
+
+    sgr_ostream(const sgr_ostream & stream) = delete;
 
     /**
      * Destructor that inserts a reset SGR into the stream if necessary.
@@ -420,15 +423,15 @@ namespace cpp_sgr
 
     sgr_ostream operator<<(const sgr & c)
     {
-      // By pre-emptively killing this stream, we ensure the reset occurs before
-      // the new stream is created; without this, the second insertion occurs
-      // before this stream is destroyed, causing its SGR to be reset
-      this->kill();
+      // Prevent this stream from resetting, allowing its active SGR to be
+      // combined with the newly inserted SGR; the newly created sgr_ostream
+      // will manage the reset of both SGRs
+      this->shouldReset = false;
       return sgr_ostream(std::move(*this), c);
     }
 
   private:
-    bool dead = false;
+    bool shouldReset = true;
 
     /**
      * Mark this stream as having been reset, and insert a reset sgr if
@@ -437,9 +440,9 @@ namespace cpp_sgr
 
     void kill()
     {
-      if(!dead)
+      if(shouldReset)
       {
-        dead = true;
+        shouldReset = false;
         *this << reset.toString();
       }
     }
