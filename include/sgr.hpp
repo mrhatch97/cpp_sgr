@@ -1,28 +1,72 @@
+/**
+ *  cpp_sgr library.
+ *
+ *  @file sgr.hpp
+ */
+
+/*
+
+  MIT License
+
+  Copyright (c) 2018 Matthew Hatch
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
+ */
+
 #ifndef CPP_SGR_HPP
 #define CPP_SGR_HPP
 
+#include <exception>
 #include <iostream>
+#include <memory>
 #include <string>
+
+/**
+ *  Library namespace.
+ *
+ *  @namespace cpp_sgr
+ */
 
 namespace cpp_sgr
 {
   /**
-   * Class representing a terminal SGR (Select Graphic Rendition)
+   * Class representing a terminal SGR (Select Graphic Rendition).
+   *
+   * @class sgr
+   * Wraps a std::string and provides operations for creating SGR escape
+   * sequences using easy to remember mnemonics.
    *
    * See https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
+   * for more information.
    */
 
   class sgr
   {
 
     /**
-     * Combines the given SGRs into a single SGR; this is an alternative to the
-     * comma operator
+     * Combines the given SGRs into a single SGR.
      *
-     * @param  left  Left hand SGR operand
-     * @param  right Right hand SGR operand
+     * @param  left  Left SGR to be combined
+     * @param  right Right SGR to be combined
      * @return     Combined SGR
-     * @see operator,
+     * @see operator,(const sgr & left, const sgr & right)
      */
 
     friend sgr operator+(const sgr & left, const sgr & right)
@@ -31,13 +75,12 @@ namespace cpp_sgr
     }
 
     /**
-     * Combines the given SGRs into a single SGR; this is an alternative to the
-     * + operator
+     * Combines the given SGRs into a single SGR.
      *
-     * @param  left  Left hand SGR operand
-     * @param  right Right hand SGR operand
+     * @param  left  Left SGR to be combined
+     * @param  right Right SGR to be combined
      * @return     Combined SGR
-     * @see operator+
+     * @see operator+(const sgr & left, const sgr & right)
      */
 
     friend sgr operator,(const sgr & left, const sgr & right)
@@ -51,9 +94,7 @@ namespace cpp_sgr
     ~sgr() = default;
 
     /**
-     * Enumeration of non-color SGR codes
-     *
-     * @param code [description]
+     * Non-color SGR codes.
      */
 
     enum SGRCode { RESET = 0, BOLD = 1, FAINT = 2, ITALIC = 3, UNDERLINE = 4,
@@ -61,17 +102,22 @@ namespace cpp_sgr
       FRAME = 51, ENCIRCLE = 52, OVERLINE = 53 };
 
     /**
-     * Construct an SGR with the given standard SGR code
+     * Construct an sgr with the given SGR code.
      *
-     * @param code SGR parameter number
+     * @param code SGR code
      */
 
     sgr(const SGRCode code) : sgr(std::to_string(code)) { }
 
     /**
-     * Convert the SGR to a string suitable for output
+     * Retrieve the escape sequence string represented by this sgr.
      *
-     * @return String representation of the SGR
+     * The std::string produced by this method can be directly printed,
+     * but this does not provide the automatic reset functionality of
+     * stream insertion of the sgr class. It is thus the programmer's
+     * responsibility to print a reset SGR (or not).
+     *
+     * @return std::string representing this sgr
      */
 
     std::string toString() const
@@ -82,13 +128,15 @@ namespace cpp_sgr
   protected:
 
     /**
-     * Construct an SGR with the given ANSI string - this is unchecked, so if
-     * the string is invalid, this is not verified by the class
+     * Construct an SGR with the given std::string.
      *
-     * @param ansiString ANSI SGR string
+     * This constructor does not verify that the string is a valid escape
+     * sequence.
+     *
+     * @param str SGR string representation
      */
 
-    explicit sgr(const std::string ansiString) : str(ansiString) { }
+    explicit sgr(const std::string str) : str(str) { }
 
   private:
     static const std::string escape;
@@ -100,30 +148,52 @@ namespace cpp_sgr
   const std::string sgr::escape = "\033[";
   const std::string sgr::terminator = "m";
 
-  /**
-   * "reset" SGR
-   */
-
-  const sgr reset = sgr(sgr::RESET);
+  const sgr reset = sgr(sgr::RESET); /**< Clear all SGRs */
 
   // most commonly supported SGRs
-  const sgr underline = sgr(sgr::UNDERLINE);
-  const sgr bold = sgr(sgr::BOLD);
-  const sgr reverse = sgr(sgr::REVERSE);
+  const sgr underline = sgr(sgr::UNDERLINE); /**< Underlined text */
+  const sgr bold = sgr(sgr::BOLD); /**< Bold text */
+  const sgr reverse = sgr(sgr::REVERSE); /**< Swapped foreground and background colors */
 
   // rarely supported SGRs
-  const sgr faint = sgr(sgr::FAINT);
-  const sgr italic = sgr(sgr::ITALIC);
-  const sgr blink_slow = sgr(sgr::BLINK_SLOW);
-  const sgr blink_fast = sgr(sgr::BLINK_FAST);
-  const sgr conceal = sgr(sgr::CONCEAL);
-  const sgr strike = sgr(sgr::STRIKE);
-  const sgr frame = sgr(sgr::FRAME);
-  const sgr encircle = sgr(sgr::ENCIRCLE);
-  const sgr overline = sgr(sgr::OVERLINE);
+  const sgr faint = sgr(sgr::FAINT); /**< Faint text */
+  const sgr italic = sgr(sgr::ITALIC); /**< Italic text */
+  const sgr blink_slow = sgr(sgr::BLINK_SLOW); /**< Slow-blinking text */
+  const sgr blink_fast = sgr(sgr::BLINK_FAST); /**< Fast-blinking text */
+  const sgr conceal = sgr(sgr::CONCEAL); /**< Concealed text */
+  const sgr strike = sgr(sgr::STRIKE); /**< Struckthrough text */
+  const sgr frame = sgr(sgr::FRAME); /**< Framed text */
+  const sgr encircle = sgr(sgr::ENCIRCLE); /**< Encircled text */
+  const sgr overline = sgr(sgr::OVERLINE); /**< Overlined text */
 
   /**
-   * Class representing a terminal color SGR
+   * Exception indicating a color component outside the range [0,255] was
+   * passed to a 24-bit color constructor.
+   *
+   * @class invalid_color_component
+   */
+
+  struct invalid_color_component : public std::exception
+  {
+
+    /**
+     * Returns a text description of the error causing this exception.
+     *
+     * @return description of the error causing this exception
+     */
+
+    const char * what() const throw()
+    {
+      return "initialize 24-bit color sgr with color component outside [0,255]";
+    }
+  };
+
+  /**
+   * Class representing a terminal color SGR.
+   *
+   * @class color
+   * See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+   * for more information.
    */
 
   class color : public sgr
@@ -134,7 +204,7 @@ namespace cpp_sgr
     ~color() = default;
 
     /**
-     * Enumeration of 3/4 bit color codes
+     * 3/4 bit color codes.
      */
 
     enum ANSIColor {
@@ -144,53 +214,57 @@ namespace cpp_sgr
     };
 
     /**
-     * Construct a 3/4 bit foreground color SGR
+     * Construct a 3/4 bit foreground color SGR.
      *
      * @param  code 3/4 bit color code
-     * @return      SGR to set the foreground to the given color
+     * @return      sgr to set the foreground to the given color
      */
 
-    static sgr fg(const ANSIColor code)
+    static color fg(const ANSIColor code)
     {
       return color(code, true);
     }
 
     /**
-     * Construct a 24-bit foreground color SGR
+     * Construct a 24-bit foreground color SGR.
+     *
+     * The color components must be integers between 0 and 255 inclusive.
      *
      * @param  r 8-bit red component
      * @param  g 8-bit green component
      * @param  b 8-bit blue component
-     * @return   SGR to set the foreground to the given color
+     * @return   sgr to set the foreground to the given color
      */
 
-    static sgr fg(const int r, const int g, const int b)
+    static color fg(const int r, const int g, const int b)
     {
       return color(r, g, b, true);
     }
 
     /**
-     * Construct a 3/4 bit background color SGR
+     * Construct a 3/4 bit background color SGR.
      *
      * @param  code 3/4 bit color code
-     * @return      SGR to set the background to the given color
+     * @return      sgr to set the background to the given color
      */
 
-    static sgr bg(const ANSIColor code)
+    static color bg(const ANSIColor code)
     {
       return color(code, false);
     }
 
     /**
-     * Construct a 24-bit background color SGR
+     * Construct a 24-bit background color SGR.
+     *
+     * The color components must be integers between 0 and 255 inclusive.
      *
      * @param  r 8-bit red component
      * @param  g 8-bit green component
      * @param  b 8-bit blue component
-     * @return   SGR to set the background to the given color
+     * @return   sgr to set the background to the given color
      */
 
-    static sgr bg(const int r, const int g, const int b)
+    static color bg(const int r, const int g, const int b)
     {
       return color(r, g, b, false);
     }
@@ -198,11 +272,11 @@ namespace cpp_sgr
   private:
 
     /**
-     * Private constructor for 3/4 bit color SGRs
+     * Private constructor for 3/4 bit color SGRs.
      *
      * @param  code 3/4 bit color code
      * @param foreground true if foreground color, else false
-     * @return      SGR to set the given color
+     * @return      sgr to set the given color
      */
 
     color(const ANSIColor code, bool foreground) :
@@ -211,13 +285,15 @@ namespace cpp_sgr
     }
 
     /**
-     * Private constructor for 24-bit color SGRs
+     * Private constructor for 24-bit color SGRs.
+     *
+     * The color components must be integers between 0 and 255 inclusive.
      *
      * @param  r 8-bit red component
      * @param  g 8-bit green component
      * @param  b 8-bit blue component
      * @param foreground true if foreground color, else false
-     * @return      SGR to set the given color
+     * @return      sgr to set the given color
      */
 
     color(const int r, const int g, const int b, bool foreground) :
@@ -227,14 +303,14 @@ namespace cpp_sgr
       if(!(verifyColorComponent(r) && verifyColorComponent(g) &&
         verifyColorComponent(b)))
       {
-        throw std::runtime_error("Invalid color component");
+        throw invalid_color_component();
       }
     }
 
     /**
-     * Verify an RGB component is valid (between [0,255])
+     * Verify an RGB component in the range [0,255].
      *
-     * @param  c color component
+     * @param  c 8-bit color component
      * @return   True if valid, else false
      */
 
@@ -246,76 +322,87 @@ namespace cpp_sgr
 
   // syntactic sugar - shorthands for the constructors
 
-  const sgr black_fg = color::fg(color::BLACK);
-  const sgr red_fg = color::fg(color::RED);
-  const sgr green_fg = color::fg(color::GREEN);
-  const sgr yellow_fg = color::fg(color::YELLOW);
-  const sgr blue_fg = color::fg(color::BLUE);
-  const sgr magenta_fg = color::fg(color::MAGENTA);
-  const sgr cyan_fg = color::fg(color::CYAN);
-  const sgr white_fg = color::fg(color::WHITE);
+  const sgr black_fg = color::fg(color::BLACK); /**< Black foreground */
+  const sgr red_fg = color::fg(color::RED); /**< Red foreground */
+  const sgr green_fg = color::fg(color::GREEN); /**< Green foreground */
+  const sgr yellow_fg = color::fg(color::YELLOW); /**< Yellow foreground */
+  const sgr blue_fg = color::fg(color::BLUE); /**< Blue foreground */
+  const sgr magenta_fg = color::fg(color::MAGENTA); /**< Magenta foreground */
+  const sgr cyan_fg = color::fg(color::CYAN); /**< Cyan foreground */
+  const sgr white_fg = color::fg(color::WHITE); /**< White foreground */
 
-  const sgr b_black_fg = color::fg(color::BRIGHT_BLACK);
-  const sgr b_red_fg = color::fg(color::BRIGHT_RED);
-  const sgr b_green_fg = color::fg(color::BRIGHT_GREEN);
-  const sgr b_yellow_fg = color::fg(color::BRIGHT_YELLOW);
-  const sgr b_blue_fg = color::fg(color::BRIGHT_BLUE);
-  const sgr b_magenta_fg = color::fg(color::BRIGHT_MAGENTA);
-  const sgr b_cyan_fg = color::fg(color::BRIGHT_CYAN);
-  const sgr b_white_fg = color::fg(color::BRIGHT_WHITE);
+  const sgr b_black_fg = color::fg(color::BRIGHT_BLACK); /**< Bright black foreground */
+  const sgr b_red_fg = color::fg(color::BRIGHT_RED); /**< Bright red foreground */
+  const sgr b_green_fg = color::fg(color::BRIGHT_GREEN); /**< Bright green foreground */
+  const sgr b_yellow_fg = color::fg(color::BRIGHT_YELLOW); /**< Bright yellow foreground */
+  const sgr b_blue_fg = color::fg(color::BRIGHT_BLUE); /**< Bright blue foreground */
+  const sgr b_magenta_fg = color::fg(color::BRIGHT_MAGENTA); /**< Bright magenta foreground */
+  const sgr b_cyan_fg = color::fg(color::BRIGHT_CYAN); /**< Bright cyan foreground */
+  const sgr b_white_fg = color::fg(color::BRIGHT_WHITE); /**< Bright white foreground */
 
-  const sgr black_bg = color::bg(color::BLACK);
-  const sgr red_bg = color::bg(color::RED);
-  const sgr green_bg = color::bg(color::GREEN);
-  const sgr yellow_bg = color::bg(color::YELLOW);
-  const sgr blue_bg = color::bg(color::BLUE);
-  const sgr magenta_bg = color::bg(color::MAGENTA);
-  const sgr cyan_bg = color::bg(color::CYAN);
-  const sgr white_bg = color::bg(color::WHITE);
+  const sgr black_bg = color::bg(color::BLACK); /**< Black background */
+  const sgr red_bg = color::bg(color::RED); /**< Red background */
+  const sgr green_bg = color::bg(color::GREEN); /**< Green background */
+  const sgr yellow_bg = color::bg(color::YELLOW); /**< Yellow background */
+  const sgr blue_bg = color::bg(color::BLUE); /**< Blue background */
+  const sgr magenta_bg = color::bg(color::MAGENTA); /**< Magenta background */
+  const sgr cyan_bg = color::bg(color::CYAN); /**< Cyan background */
+  const sgr white_bg = color::bg(color::WHITE); /**< White background */
 
-  const sgr b_black_bg = color::bg(color::BRIGHT_BLACK);
-  const sgr b_red_bg = color::bg(color::BRIGHT_RED);
-  const sgr b_green_bg = color::bg(color::BRIGHT_GREEN);
-  const sgr b_yellow_bg = color::bg(color::BRIGHT_YELLOW);
-  const sgr b_blue_bg = color::bg(color::BRIGHT_BLUE);
-  const sgr b_magenta_bg = color::bg(color::BRIGHT_MAGENTA);
-  const sgr b_cyan_bg = color::bg(color::BRIGHT_CYAN);
-  const sgr b_white_bg = color::bg(color::BRIGHT_WHITE);
+  const sgr b_black_bg = color::bg(color::BRIGHT_BLACK); /**< Bright black background */
+  const sgr b_red_bg = color::bg(color::BRIGHT_RED); /**< Bright red background */
+  const sgr b_green_bg = color::bg(color::BRIGHT_GREEN); /**< Bright green background */
+  const sgr b_yellow_bg = color::bg(color::BRIGHT_YELLOW); /**< Bright yellow background */
+  const sgr b_blue_bg = color::bg(color::BRIGHT_BLUE); /**< Bright blue background */
+  const sgr b_magenta_bg = color::bg(color::BRIGHT_MAGENTA); /**< Bright magenta background */
+  const sgr b_cyan_bg = color::bg(color::BRIGHT_CYAN); /**< Bright cyan background */
+  const sgr b_white_bg = color::bg(color::BRIGHT_WHITE); /**< Bright white background */
 
   /**
-   * Extension of std::ostream to allow automatic clearing of SGRs after a print
-   * is complete
+   * Extension of std::ostream representing an ostream with an SGR active in it.
+   *
+   * @class sgr_ostream
+   * This class is identical to std::ostream, but upon destruction or
+   * insertion of an sgr inserts the reset SGR into itself. Thus the user is
+   * relieved of the need to explicitly clear SGRs from streams. For typical
+   * usage, the ostream is destroyed at the end of a series of stream
+   * insertions, so the SGR will be cleared after a single chain of insertions.
    */
 
   class sgr_ostream : public std::ostream
   {
   public:
+
     /**
-     * Construct an sgr_ostream using the buffer of the given ostream and
-     * inserting the given SGR into that stream
+     * Construct an sgr_ostream by moving the provided std::ostream, and
+     * insert the specified sgr into the newly created stream.
      *
-     * @param stream Stream to replace
-     * @param sgr    SGR to insert into stream
+     * @param stream Stream to be moved
+     * @param sgr    sgr to insert into stream
      */
-    sgr_ostream(std::ostream & stream, const sgr & sgr) :
-    std::ostream(stream.rdbuf())
+    sgr_ostream(std::ostream && stream, const sgr & sgr) :
+    std::ostream(std::move(stream))
     {
+      this->rdbuf(stream.rdbuf());
       *this << sgr.toString();
     }
 
     /**
-     * Copy constructor
+     * Move constructor.
      *
-     * @param stream sgr_ostream to copy - no reinsertion is performed
+     * @param stream sgr_ostream to be moved.
+     * This performs no re-insertion of the sgr into the newly created stream.
      */
 
-    sgr_ostream(const sgr_ostream & stream) :
-    std::ostream(stream.rdbuf())
+    sgr_ostream(sgr_ostream && stream) :
+    std::ostream(std::move(stream))
     {
+      this->rdbuf(stream.rdbuf());
+      this->dead = stream.dead;
     }
 
     /**
-     * Destructor - flushes the stream with a reset sequence
+     * Destructor that inserts a reset SGR into the stream if necessary.
      */
 
     ~sgr_ostream()
@@ -324,8 +411,11 @@ namespace cpp_sgr
     }
 
     /**
-     * If another SGR is inserted into this sgr_ostream, replace this stream's
-     * SGR with the new one
+     * Replacement sgr insertion.
+     * Insertion of an sgr into an sgr_ostream results in the reset sgr being
+     * inserted into the stream, followed by moving this stream into a
+     * new stream and finally insertion of this sgr into that stream. The result
+     * of this is the inserted sgr replaces the previous sgr.
      */
 
     sgr_ostream operator<<(const sgr & c)
@@ -334,14 +424,15 @@ namespace cpp_sgr
       // the new stream is created; without this, the second insertion occurs
       // before this stream is destroyed, causing its SGR to be reset
       this->kill();
-      return sgr_ostream(*this, c);
+      return sgr_ostream(std::move(*this), c);
     }
 
   private:
     bool dead = false;
 
     /**
-     * Mark this stream as dead and wipe the SGR applied to it
+     * Mark this stream as having been reset, and insert a reset sgr if
+     * needed.
      */
 
     void kill()
@@ -355,17 +446,19 @@ namespace cpp_sgr
   };
 
   /**
-   * Insert an SGR into an ostream, returning an sgr_ostream which
-   * manages clearing the SGR from the stream automatically
+   * Insert an sgr into a std::ostream, setting the active sgr.
+   * This operation returns an sgr_ostream, which will automatically
+   * clear the active sgr when the stream being inserted into is destroyed.
+   * The std::ostream inserted into is moved into the returned sgr_ostream.
    *
-   * @param  out ostream in which to insert
-   * @param  c   SGR to insert
-   * @return     sgr_ostream replacing the ostream
+   * @param  out std::ostream to insert into
+   * @param  c   sgr to insert
+   * @return     sgr_ostream replacing the std::ostream
    */
 
   sgr_ostream operator<<(std::ostream & out, const sgr & c)
   {
-    return sgr_ostream(out, c);
+    return sgr_ostream(std::move(out), c);
   }
 }
 

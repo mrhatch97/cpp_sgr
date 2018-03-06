@@ -19,22 +19,12 @@ void codeTest()
 }
 
 /**
- * Demonstrate the ANSI color SGRs
+ * Demonstrate the 3/4-bit color SGRs
  */
 
 void ansiTest()
 {
-    /*
-
-    Note: when using background colors, the background color may
-    be applied to the space between lines when inserting newlines inside
-    an SGR-colored block
-
-    See this answer for more information: https://stackoverflow.com/a/30064906
-
-    */
-
-    std::cout << (bold, underline) << "Testing ANSI Colors:\n";
+    std::cout << (bold, underline) << "Testing colors:\n";
     std::cout << (red_fg) << "Red foreground";
     std::cout << "\n";
     std::cout << (cyan_bg) << "Cyan fackground";
@@ -72,6 +62,11 @@ void iteratorTest()
     }
 
 }
+
+/**
+ * Demonstrate SGRs that are not commonly supported; results may vary
+ * depending on terminal emulator.
+ */
 
 void exoticTest()
 {

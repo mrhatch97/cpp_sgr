@@ -3,8 +3,12 @@ cmake_minimum_required (VERSION 3.0.2)
 project (cpp_sgr LANGUAGES CXX)
 
 set(VERSION_MAJOR   1)
-set(VERSION_MINOR   0)
+set(VERSION_MINOR   1)
 set(VERSION_PATCH   0)
+
+add_definitions(${GCC_COVERAGE_COMPILE_FLAGS} "-Wextra")
+
+set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}" )
 
 include_directories(include)
 
