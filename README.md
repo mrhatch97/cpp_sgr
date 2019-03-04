@@ -1,5 +1,6 @@
-# cpp_sgr Usage Guide
-[![pipeline status](https://gitlab.com/mrhatch/cpp_sgr/badges/master/pipeline.svg)](https://gitlab.com/mrhatch/cpp_sgr/commits/master)
+cpp_sgr
+======
+[![pipeline status](https://gitlab.com/mrhatch/cpp_sgr/badges/master/pipeline.svg)](https://gitlab.com/mrhatch/cpp_sgr/commits/master) [Doxygen Reference](https://mrhatch.gitlab.io/cpp_sgr)
 
 cpp_sgr is a library to ease the use of SGRs in programs producing output to
 a terminal. SGRs (Select Graphic Renditions) are special character sequences
@@ -8,6 +9,10 @@ concerned with SGRs controlling text styling and coloring. Thus it provides
 an interface that abstracts the ugly magic strings specifying SGRs behind
 convenient mnemonics, and automatically handles clearing SGRs when they
 are no longer needed.
+
+SGRs in action:
+
+![SGR Demonstration](docs/img/demo.png)
 
 ## Basics
 
@@ -137,10 +142,10 @@ std::cerr << cpp_sgr::red_bg << "Some text" << cpp_sgr::reset << "\n";
 
 ## Installation
 
-To install this library for use in a project, simply copy `include/sgr.hpp` to
-the system include directory or a project-specific include directory.
-Include `sgr.hpp` to make it available.
+To install this library for use in a project, simply copy `include/sgr.hpp` to a
+project-specific include directory, or use CMake to install the library to the
+system include directory and use find_package to import it into a CMake project.
+Include `cpp_sgr/sgr.hpp` to make it available.
 
-A demonstration program has been provided, along with a Doxygen configuration
-file. If desired, the accompanying CMake configuration file can be used
-to build the demo file and Doxygen documentation.
+A demonstration program has been provided, built as `demo`, which showcases the
+functionality of the library.
