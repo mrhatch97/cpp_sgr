@@ -1,4 +1,5 @@
 # cpp_sgr Usage Guide
+[![pipeline status](https://gitlab.com/mrhatch/cpp_sgr/badges/master/pipeline.svg)](https://gitlab.com/mrhatch/cpp_sgr/commits/master)
 
 cpp_sgr is a library to ease the use of SGRs in programs producing output to
 a terminal. SGRs (Select Graphic Renditions) are special character sequences
