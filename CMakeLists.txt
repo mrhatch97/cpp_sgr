@@ -27,7 +27,7 @@ target_include_directories(cpp_sgr
 
 if(BUILD_DEMO)
   add_executable(demo
-    src/demo.cpp)
+    demo/demo.cpp)
 
   target_link_libraries(demo
     cpp_sgr)
