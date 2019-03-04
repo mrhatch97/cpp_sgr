@@ -1,5 +1,9 @@
 image: rikorose/gcc-cmake:latest
 
+before_script:
+    - apt-get update --yes
+    - apt-get install --yes doxygen
+
 stages:
     - build
     - test
@@ -19,5 +23,16 @@ test:
     stage: test
     script:
         - make -Cbuild test
+    dependencies:
+        - build
+
+pages:
+    script:
+        - mv build/html/ public/
+    artifacts:
+        paths:
+            - public
+    only:
+        - master
     dependencies:
         - build
