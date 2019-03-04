@@ -73,3 +73,9 @@ if(BUILD_DOCUMENTATION)
         message(FATAL_ERROR "Doxygen needs to be installed to generate the doxygen documentation")
     endif(DOXYGEN_FOUND)
 endif(BUILD_DOCUMENTATION)
+
+include(CTest)
+
+if(BUILD_TESTING)
+  add_subdirectory(test)
+endif()

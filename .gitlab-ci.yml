@@ -1,0 +1,23 @@
+image: rikorose/gcc-cmake:latest
+
+stages:
+    - build
+    - test
+
+build:
+    stage: build
+    variables:
+        CC: gcc
+        CXX: g++
+    script:
+        - cmake -DBUILD_TESTING=ON -Bbuild -H.
+        - cmake --build build
+    artifacts:
+        untracked: true
+
+test:
+    stage: test
+    script:
+        - make test
+    dependencies:
+        - build
