@@ -1,10 +1,8 @@
-cmake_minimum_required (VERSION 3.0.2)
+cmake_minimum_required (VERSION 3.7)
 
-project (cpp_sgr LANGUAGES CXX)
-
-set(VERSION_MAJOR   1)
-set(VERSION_MINOR   1)
-set(VERSION_PATCH   1)
+project (cpp_sgr
+  LANGUAGES CXX
+  VERSION 1.2.0)
 
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS} "-Wall -Wextra")
 

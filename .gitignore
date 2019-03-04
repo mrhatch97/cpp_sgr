@@ -1,6 +1,0 @@
-*.o
-*.gch
-*.swp
-
-#CMake output
-build/*

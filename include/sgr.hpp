@@ -173,7 +173,6 @@ namespace cpp_sgr
    *
    * @class invalid_color_component
    */
-
   struct invalid_color_component : public std::exception
   {
 
@@ -182,7 +181,6 @@ namespace cpp_sgr
      *
      * @return description of the error causing this exception
      */
-
     const char * what() const throw()
     {
       return "initialize 24-bit color sgr with color component outside [0,255]";
@@ -196,7 +194,6 @@ namespace cpp_sgr
    * See https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
    * for more information.
    */
-
   class color : public sgr
   {
   public:
@@ -207,7 +204,6 @@ namespace cpp_sgr
     /**
      * 3/4 bit color codes.
      */
-
     enum ANSIColor {
       BLACK=30, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE,
       BRIGHT_BLACK=90, BRIGHT_RED, BRIGHT_GREEN, BRIGHT_YELLOW,
@@ -220,7 +216,6 @@ namespace cpp_sgr
      * @param  code 3/4 bit color code
      * @return      sgr to set the foreground to the given color
      */
-
     static color fg(const ANSIColor code)
     {
       return color(code, true);
@@ -236,7 +231,6 @@ namespace cpp_sgr
      * @param  b 8-bit blue component
      * @return   sgr to set the foreground to the given color
      */
-
     static color fg(const int r, const int g, const int b)
     {
       return color(r, g, b, true);
@@ -248,7 +242,6 @@ namespace cpp_sgr
      * @param  code 3/4 bit color code
      * @return      sgr to set the background to the given color
      */
-
     static const color bg(const ANSIColor code)
     {
       return color(code, false);
@@ -264,7 +257,6 @@ namespace cpp_sgr
      * @param  b 8-bit blue component
      * @return   sgr to set the background to the given color
      */
-
     static color bg(const int r, const int g, const int b)
     {
       return color(r, g, b, false);
@@ -279,7 +271,6 @@ namespace cpp_sgr
      * @param foreground true if foreground color, else false
      * @return      sgr to set the given color
      */
-
     color(const ANSIColor code, bool foreground) :
     sgr(std::to_string(foreground ? code : (code + 10)))
     {
@@ -296,7 +287,6 @@ namespace cpp_sgr
      * @param foreground true if foreground color, else false
      * @return      sgr to set the given color
      */
-
     color(const int r, const int g, const int b, bool foreground) :
     sgr((foreground ? "38;2;" : "48;2;") + std::to_string(r) + ";" +
     std::to_string(g) + ";" + std::to_string(b))
@@ -314,7 +304,6 @@ namespace cpp_sgr
      * @param  c 8-bit color component
      * @return   True if valid, else false
      */
-
     static bool verifyColorComponent(const int c) noexcept
     {
       return c <= 255 && c >= 0;
@@ -360,84 +349,76 @@ namespace cpp_sgr
   const sgr b_white_bg = color::bg(color::BRIGHT_WHITE); /**< Bright white background */
 
   /**
-   * Extension of std::ostream representing an ostream with an SGR active in it.
+   * Wrapper for std::ostream that automatically clears SGRs when disposed
    *
-   * @class sgr_ostream
-   * This class is identical to std::ostream, but upon destruction or
-   * insertion of an sgr inserts the reset SGR into itself. Thus the user is
+   * @class sgr_ostream_wrapper
+   * This class wraps std::ostream for SGR management; upon destruction,
+   * it inserts the reset SGR into its underlying stream. Thus the user is
    * relieved of the need to explicitly clear SGRs from streams. For typical
    * usage, the ostream is destroyed at the end of a series of stream
    * insertions, so the SGR will be cleared after a single chain of insertions.
    */
 
-  class sgr_ostream : public std::ostream
+  class sgr_ostream_wrapper
   {
   public:
 
     /**
-     * Construct an sgr_ostream by moving the provided std::ostream, and
+     * Construct an sgr_ostream_wrapper by moving the provided std::ostream, and
      * insert the specified sgr into the newly created stream.
      *
      * @param stream Stream to be moved
-     * @param sgr    sgr to insert into stream
      */
-    sgr_ostream(std::ostream && stream, const sgr & sgr) :
-    std::ostream(std::move(stream))
+    sgr_ostream_wrapper(std::ostream & stream) :
+      stream(stream.rdbuf()), shouldReset(true)
     {
-      this->rdbuf(stream.rdbuf());
-      *this << sgr.toString();
     }
 
     /**
-     * Move constructor.
+     * Construct an sgr_ostream_wrapper by taking ownership of the other stream's
+     * internal std::ostream and assuming reset responsibility.
      *
-     * @param stream sgr_ostream to be moved.
-     * This performs no re-insertion of the sgr into the newly created stream.
+     * @param other Stream to be moved
      */
-
-    sgr_ostream(sgr_ostream && stream) :
-    std::ostream(std::move(stream))
+    sgr_ostream_wrapper(sgr_ostream_wrapper && other) :
+      stream(other.stream.rdbuf()), shouldReset(other.shouldReset)
     {
-      this->rdbuf(stream.rdbuf());
-      this->shouldReset = stream.shouldReset;
+      other.shouldReset = false;
     }
 
-    sgr_ostream(const sgr_ostream & stream) = delete;
+    sgr_ostream_wrapper(const sgr_ostream_wrapper & other) = delete;
 
     /**
      * Destructor that inserts a reset SGR into the stream if necessary.
      */
-
-    ~sgr_ostream()
+    ~sgr_ostream_wrapper()
     {
       this->kill();
     }
 
     /**
-     * Replacement sgr insertion.
-     * Insertion of an sgr into an sgr_ostream results in the reset sgr being
-     * inserted into the stream, followed by moving this stream into a
-     * new stream and finally insertion of this sgr into that stream. The result
-     * of this is the inserted sgr replaces the previous sgr.
+     * Insert the given argument into the underlying std::ostream. T must
+     * overload operator<<.
+     *
+     * @param t Object to insert into stream
+     * @return Reference to this wrapper
      */
-
-    sgr_ostream operator<<(const sgr & c)
+    template<class T>
+    sgr_ostream_wrapper & operator<<(const T & t)
     {
-      // Prevent this stream from resetting, allowing its active SGR to be
-      // combined with the newly inserted SGR; the newly created sgr_ostream
-      // will manage the reset of both SGRs
-      this->shouldReset = false;
-      return sgr_ostream(std::move(*this), c);
+      stream << t;
+      return *this;
     }
 
   private:
+    std::ostream stream;
+
     bool shouldReset = true;
 
     /**
      * Mark this stream as having been reset, and insert a reset sgr if
      * needed.
      */
-
     void kill()
     {
       if(shouldReset)
@@ -449,19 +430,35 @@ namespace cpp_sgr
   };
 
   /**
+   * Specialization of wrapper insertion for sgrs. Converts the given sgr into
+   * its string representation and inserts it into the underlying stream.
+   *
+   * @param c sgr to insert into stream
+   * @return Reference to this wrapper
+   */
+  template<>
+  sgr_ostream_wrapper & sgr_ostream_wrapper::operator<<(const sgr & c)
+  {
+    stream << c.toString();
+    return *this;
+  }
+
+  /**
    * Insert an sgr into a std::ostream, setting the active sgr.
-   * This operation returns an sgr_ostream, which will automatically
+   * This operation returns an sgr_ostream_wrapper, which will automatically
    * clear the active sgr when the stream being inserted into is destroyed.
-   * The std::ostream inserted into is moved into the returned sgr_ostream.
+   * The buffer of the std::ostream inserted into is referenced from the
+   * returned wrapper from a new internal std::ostream.
    *
    * @param  out std::ostream to insert into
    * @param  c   sgr to insert
    * @return     sgr_ostream replacing the std::ostream
    */
-
-  sgr_ostream operator<<(std::ostream & out, const sgr & c)
+  sgr_ostream_wrapper operator<<(std::ostream & out, const sgr & c)
   {
-    return sgr_ostream(std::move(out), c);
+    sgr_ostream_wrapper wrapper(out);
+    wrapper << c;
+    return std::move(wrapper);
   }
 }
 
