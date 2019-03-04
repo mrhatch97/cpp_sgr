@@ -1,4 +1,4 @@
-#include "sgr.hpp"
+#include <cpp_sgr/sgr.hpp>
 
 #include <iomanip>
 #include <iostream>
