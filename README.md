@@ -107,6 +107,14 @@ std::cerr << cpp_sgr::red_fg << "This text is red\n" << cpp_sgr::reset <<
 
 ## Other Useful Information
 
+### Windows Support
+SGRs should work out of the box on Linux terminal emulators (e.g. Git Bash's 
+MINGW terminal) on Windows.
+
+To get SGRs working with the Windows Command Processor (`cmd.exe`), a call to
+cpp_sgr::enable_vterm_processing is required before `cmd` will interpret
+SGRs as commands rather than as plaintext. 
+
 ### Terminal Emulator Support
 Of the non-color SGRs, `bold`, `underline`, and `reverse` are the most widely
 supported by terminal emulators. YMMV when using other SGRs, as they may have
